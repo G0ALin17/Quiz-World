@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Quiz Host</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <h1>🎉 Welcome to the Quiz Host Panel!</h1>
+  <p>Open <code>/player</code> on another device to join as a player.</p>
+
+  <label for="hostCategory">Select Quiz Category:</label><br>
+<select id="hostCategory">
+  <option value="animals">🐾 Animals</option>
+  <option value="general">🧠 General</option>
+  <option value="sports">⚽ Sports</option>
+  <option value="food">🍕 Food</option>
+  <option value="disney">🏰 Disney</option>
+</select><br><br>
+  <button id="startQuizBtn">Start Quiz</button>
+
+  <script src="/socket.io/socket.io.js"></script>
+<script>
+  const socket = io();
+
+  const startBtn = document.getElementById('startQuizBtn');
+
+  const questionSets = {
+  animals: [
+    {
+      text: "Which animal is known as the king of the jungle?",
+      answers: ["Tiger", "Elephant", "Lion", "Giraffe"],
+      correct: 2
+    },
+    {
+      text: "What do pandas mostly eat?",
+      answers: ["Fish", "Bamboo", "Meat", "Leaves"],
+      correct: 1
+    }
+  ],
+  general: [
+    {
+      text: "What is the capital of France?",
+      answers: ["Berlin", "Madrid", "Paris", "Rome"],
+      correct: 2
+    },
+    {
+      text: "What color is the sky on a clear day?",
+      answers: ["Green", "Red", "Blue", "Purple"],
+      correct: 2
+    }
+  ],
+  sports: [
+    {
+      text: "How many players are on a football (soccer) team?",
+      answers: ["9", "10", "11", "12"],
+      correct: 2
+    },
+    {
+      text: "Which country hosted the 2022 FIFA World Cup?",
+      answers: ["Brazil", "Qatar", "Germany", "Russia"],
+      correct: 1
+    }
+  ],
+  food: [
+    {
+      text: "Which fruit is used to make guacamole?",
+      answers: ["Banana", "Avocado", "Mango", "Papaya"],
+      correct: 1
+    },
+    {
+      text: "Sushi is a cuisine from which country?",
+      answers: ["China", "Japan", "Korea", "Vietnam"],
+      correct: 1
+    }
+  ],
+  disney: [
+    {
+      text: "Who is the snowman in Frozen?",
+      answers: ["Olaf", "Sven", "Kristoff", "Elsa"],
+      correct: 0
+    },
+    {
+      text: "Which Disney princess has a pet tiger?",
+      answers: ["Ariel", "Jasmine", "Belle", "Mulan"],
+      correct: 1
+    }
+  ]
+};
+
+
+  let selectedQuestions = [];
+  let currentQuestionIndex = 0;
+
+function sendQuestion() {
+  if (currentQuestionIndex < selectedQuestions.length) {
+    const question = selectedQuestions[currentQuestionIndex];
+    socket.emit('start-quiz', question);
+  } else {
+    socket.emit('end-quiz');
+  }
+}
+
+  startBtn.addEventListener('click', () => {
+  const selectedCategory = document.getElementById('hostCategory').value;
+  selectedQuestions = questionSets[selectedCategory] || [];
+  currentQuestionIndex = 0;
+  sendQuestion();
+});
+
+  socket.on('next-question', () => {
+    currentQuestionIndex++;
+    sendQuestion();
+  });
+</script>
+</body>
+</html>
